@@ -1,8 +1,8 @@
 name: Check WhatsApp Version
 
 on:
-  # schedule:
-  #   - cron: '0 * * * *'   # 每小时整点检查一次，可自行调整
+  schedule:
+    - cron: '0 * * * *'   # 每小时整点检查一次，可自行调整
   workflow_dispatch: {}    # 允许在 Actions 页面手动点击运行，方便测试
 
 permissions:
@@ -23,11 +23,19 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt
 
+      - name: 安装 Playwright 浏览器内核
+        run: playwright install --with-deps chromium
+
       - name: 运行版本检测脚本
         env:
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
         run: python check_whatsapp_version.py
 
       - name: 提交更新后的版本记录
