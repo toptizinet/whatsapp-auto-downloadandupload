@@ -1,0 +1,39 @@
+name: Check WhatsApp Version
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # 每小时整点检查一次，可自行调整
+  workflow_dispatch: {}    # 允许在 Actions 页面手动点击运行，方便测试
+
+permissions:
+  contents: write   # 需要写权限才能把 last_version.json 提交回仓库
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 运行版本检测脚本
+        env:
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python check_whatsapp_version.py
+
+      - name: 提交更新后的版本记录
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add last_version.json
+          git diff --staged --quiet || git commit -m "chore: 更新 WhatsApp 版本记录"
+          git push
